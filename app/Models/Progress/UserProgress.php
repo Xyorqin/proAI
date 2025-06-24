@@ -6,5 +6,5 @@ use App\Models\BaseModel;
 
 class UserProgress extends BaseModel
 {
-    //
+    protected $table = 'user_progresses';
 }

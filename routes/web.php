@@ -7,6 +7,3 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::prefix('bot')->group(function () {
-    Route::post('/webhook', [TelegramController::class, 'webhook']);
-});

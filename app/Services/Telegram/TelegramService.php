@@ -32,7 +32,7 @@ class TelegramService
      */
     public function handleUpdate(array $update): void
     {
-        try {
+        // try {
             if (isset($update['message'])) {
                 $this->handleMessage($update['message']);
             } elseif (isset($update['callback_query'])) {
@@ -40,12 +40,12 @@ class TelegramService
             } else {
                 Log::warning('Unknown Telegram update type', ['update' => $update]);
             }
-        } catch (\Throwable $e) {
-            Log::error('TelegramService error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'update' => $update,
-            ]);
-        }
+        // } catch (\Throwable $e) {
+        //     Log::error('TelegramService error: ' . $e->getMessage(), [
+        //         'trace' => $e->getTraceAsString(),
+        //         'update' => $update,
+        //     ]);
+        // }
     }
 
     protected function handleMessage(array $message): void

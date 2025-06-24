@@ -8,11 +8,15 @@ class UserService
 {
     public function getOrCreateByChatId(int $chatId, array $from): User
     {
-        return User::firstOrCreate(
-            ['chat_id' => $chatId],
+        return User::query()->firstOrCreate(
             [
-                'username'   => $from['username'] ?? null,
-                'password'       => bcrypt('123456'), // default password
+                'email' => $from['username'] . '@example.com',
+            ],
+            [
+                'chat_id' => $chatId,
+                'username' => $from['username'] ?? null,
+                'name' => $from['first_name'] . ' ' . ($from['last_name'] ?? ''),
+                'password' => bcrypt('123456'), // default password
             ]
         );
     }

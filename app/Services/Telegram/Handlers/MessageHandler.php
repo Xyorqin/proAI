@@ -23,7 +23,7 @@ class MessageHandler
         $text = $message['text'] ?? '';
 
         $user = $this->userService->getOrCreateByChatId($chatId, $message['from']);
-
+loggeR($user);
         if ($text === '/start') {
             $this->resetProgress($user->id);
             $this->sendWelcome($chatId, $user->username);
@@ -54,7 +54,7 @@ class MessageHandler
         };
     }
 
-    protected function sendWelcome(int $chatId, string $username): void
+    protected function sendWelcome(int $chatId, ?string $username): void
     {
         $this->telegram->sendMessage([
             'chat_id' => $chatId,
