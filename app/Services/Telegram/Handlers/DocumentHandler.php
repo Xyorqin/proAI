@@ -23,7 +23,7 @@ class DocumentHandler
 
     public function handle(array $message): void
     {
-        $chatId = $message['chat']['id'];
+        $chatId = $message['from']['id'];
         $document = $message['document'];
 
         $fileId = $document['file_id'];
@@ -42,7 +42,7 @@ class DocumentHandler
 
         // Progress va AI logika
         // $this->progressService->markCompleted($chatId);
-        $this->promptService->storePromptContext($chatId, $localPath);
+        // $this->promptService->storePromptContext($chatId, $localPath);
 
         $this->telegram->sendMessage([
             'chat_id' => $chatId,

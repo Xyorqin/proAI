@@ -23,7 +23,7 @@ class CallbackHandler
 
     public function handle(array $message): void
     {
-        $chatId = $message['chat']['id'];
+        $chatId = $message['from']['id'];
         $user = $this->userService->getOrCreateByChatId($chatId, $message['from']);
 
         if (!isset($message['document'])) {
