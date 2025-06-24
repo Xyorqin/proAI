@@ -69,7 +69,6 @@ class SectionService
             }
         }
 
-        // Reply uchun prompt
         $this->telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Iltimos, faylni to‘ldirib qayta yuklang:',
