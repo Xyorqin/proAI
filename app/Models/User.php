@@ -3,6 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Models\Files\File;
+use App\Models\Progress\UserProgress;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -44,5 +47,20 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function files()
+    {
+        return $this->hasMany(File::class);
+    }
+
+    public function progress()
+    {
+        return $this->hasMany(UserProgress::class, 'id', 'user_id');
+    }
+
+    public function state()
+    {
+        return $this->belongsTo(UserState::class, 'id', 'user_id');
     }
 }

@@ -5,8 +5,8 @@ namespace App\Services\Telegram\Handlers;
 use Telegram\Bot\Api;
 use Illuminate\Support\Facades\Storage;
 use App\Services\AI\PromptService;
-use App\Services\Progress\UserProgressService;
 use App\Models\Files\File;
+use App\Services\Telegram\Progress\UserProgressService;
 
 class DocumentHandler
 {

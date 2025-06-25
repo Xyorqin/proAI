@@ -2,7 +2,9 @@
 
 namespace App\Services\User;
 
+use App\Models\Progress\UserProgress;
 use App\Models\User;
+use App\Models\UserState;
 
 class UserService
 {
@@ -14,7 +16,7 @@ class UserService
             ],
             [
                 'chat_id' => $chatId,
-                'username' => $from['username'] ?? null,
+                'username' => $from['username'],
                 'name' => $from['first_name'] . ' ' . ($from['last_name'] ?? ''),
                 'password' => bcrypt('123456'), // default password
             ]
@@ -34,5 +36,16 @@ class UserService
     public function deductToken(User $user, int $amount = 1): void
     {
         $user->decrement('token_balance', $amount);
+    }
+
+    public function updateState($userId, $level): void
+    {
+        UserState::updateOrCreate(
+            ['user_id' => $userId],
+            [
+                'level' => $level,
+                'step' => 0,
+            ]
+        );
     }
 }

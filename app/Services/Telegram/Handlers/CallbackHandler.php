@@ -4,10 +4,12 @@ namespace App\Services\Telegram\Handlers;
 
 use App\Models\Files\File;
 use App\Models\Progress\UserProgress;
+use App\Models\Structure\Section;
 use App\Models\Structure\Subsection;
 use Telegram\Bot\Api;
 use App\Services\Section\SectionService;
 use App\Services\User\UserService;
+use App\UserStateLevelEnum;
 use Illuminate\Support\Facades\Storage;
 
 class CallbackHandler
@@ -26,74 +28,113 @@ class CallbackHandler
         $chatId = $message['from']['id'];
         $user = $this->userService->getOrCreateByChatId($chatId, $message['from']);
 
-        if (!isset($message['document'])) {
+        if ($message['data'] === 'back_to_menu') {
+            $this->userService->updateState($user->id, UserStateLevelEnum::MENU_LEVEL);
             $this->telegram->sendMessage([
                 'chat_id' => $chatId,
-                'text' => "Iltimos fayl yuboring.",
+                'text' => "Asosiy menyuga qaytdingiz.",
+            ]);
+            $this->showMainMenu($chatId);
+            return;
+        }
+
+        if ($user->state?->level == UserStateLevelEnum::MENU_LEVEL) {
+            $this->sendSubSectionList($message, $user->id);
+            return;
+        }
+        if ($user->state?->level == UserStateLevelEnum::SECTION_LEVEL) {
+            $this->sendSubSectionDetails($message, $user->id);
+            return;
+        }
+    }
+
+    public function sendSubSectionList(array $message, int $userId): void
+    {
+        $section_id = explode('_', $message['data'])[1] ?? null;
+        $subsections = Subsection::where('section_id', $section_id)->get();
+
+        if ($subsections->isEmpty()) {
+            $this->telegram->sendMessage([
+                'chat_id' => $message['from']['id'],
+                'text' => "Bu bo‘limda hech qanday bo‘lim mavjud emas.",
             ]);
             return;
         }
 
-        $fileInfo = $message['document'];
-        $fileId = $fileInfo['file_id'];
-        $fileName = $fileInfo['file_name'];
-
-        $filePathData = $this->telegram->getFile(['file_id' => $fileId]);
-        $filePath = $filePathData['file_path'];
-
-        $telegramFileUrl = "https://api.telegram.org/file/bot" . config('telegram.bots.mybot.token') . "/" . $filePath;
-
-        $savedPath = 'user_uploads/' . uniqid() . '_' . $fileName;
-        Storage::disk('public')->put($savedPath, file_get_contents($telegramFileUrl));
-
-        $progress = UserProgress::where('user_id', $user->id)->latest()->first();
-
-        if (!$progress || !$progress->subsection) {
-            $this->telegram->sendMessage([
-                'chat_id' => $chatId,
-                'text' => 'Bo‘lim topilmadi. Iltimos menyudan qaytadan urinib ko‘ring.',
-            ]);
-            return;
+        $keyboard = [];
+        foreach ($subsections as $subsection) {
+            $keyboard[] = [
+                ['text' => $subsection->name, 'callback_data' => 'subsection_' . $subsection->id],
+            ];
         }
 
-        $subsection = $progress->subsection;
+        $keyboard[] = [
+            [
+                'text' => "⬅️ Orqaga",
+                'callback_data' => 'back_to_menu'
+            ]
+        ];
 
-        File::create([
-            'user_id' => $user->id,
-            'subsection_id' => $subsection->id,
-            'path' => $savedPath,
+        $this->telegram->editMessageText([
+            'chat_id' => $message['from']['id'],
+            'message_id' => $message['message']['message_id'],
+            'text' => "Iltimos, bo‘lim tanlang:",
+            'reply_markup' => json_encode(['inline_keyboard' => $keyboard]),
         ]);
+        // $this->userService->updateProgress($userId, UserStateLevelEnum::SECTION_LEVEL, $section_id);
+    }
 
-        $progress->update(['step' => 3]);
-
-        // ProcessWithAI::dispatch($user, $subsection, $savedPath);
+    public function showMainMenu(int $chatId): void
+    {
+        $buttons = Section::all()->map(fn($section) => [
+            [
+                'text' => $section->name,
+                'callback_data' => 'section_' . $section->id,
+            ]
+        ])->toArray();
 
         $this->telegram->sendMessage([
             'chat_id' => $chatId,
-            'text' => "Faylingiz qabul qilindi. Endi keyingi bosqichga o'tamiz.",
+            'text' => 'Asosiy bo‘limni tanlang:',
+            'reply_markup' => json_encode(['inline_keyboard' => $buttons])
         ]);
+    }
 
-        $nextSubsection = Subsection::where('section_id', $subsection->section_id)
-            ->where('id', '>', $subsection->id)
-            ->orderBy('id')
-            ->first();
+    public function sendSubSectionDetails($message, $userId)
+    {
+        $subsectionId = explode('_', $message['data'])[1] ?? null;
+        $subsection = Subsection::find($subsectionId);
 
-        if ($nextSubsection) {
-            UserProgress::create([
-                'user_id' => $user->id,
-                'subsection_id' => $nextSubsection->id,
-                'step' => 0,
-            ]);
-
+        if (!$subsection) {
             $this->telegram->sendMessage([
-                'chat_id' => $chatId,
-                'text' => "Keyingi bo‘lim: {$nextSubsection->name}.",
+                'chat_id' => $message['from']['id'],
+                'text' => "Bu bo‘lim topilmadi.",
             ]);
-        } else {
-            $this->telegram->sendMessage([
-                'chat_id' => $chatId,
-                'text' => "Tugadi. Bosh menyuga qaytishingiz mumkin.",
-            ]);
+            return;
         }
     }
+
+    // public function showMainMenu(int $chatId): void
+    // {
+    //     $user = $this->userService->getOrCreateByChatId($chatId);
+    //     $progressSections = $user->progressSections()->pluck('section_id')->toArray();
+    //     $sections = Section::all();
+
+    //     $buttons = [];
+    //     foreach ($sections as $section) {
+    //         $emoji = in_array($section->id, $progressSections) ? '✅ ' : '';
+    //         $buttons[] = [
+    //             [
+    //                 'text' => $emoji . $section->name,
+    //                 'callback_data' => 'section_' . $section->id,
+    //             ]
+    //         ];
+    //     }
+
+    //     $this->telegram->sendMessage([
+    //         'chat_id' => $chatId,
+    //         'text' => 'Asosiy bo‘limni tanlang:',
+    //         'reply_markup' => json_encode(['inline_keyboard' => $buttons])
+    //     ]);
+    // }
 }

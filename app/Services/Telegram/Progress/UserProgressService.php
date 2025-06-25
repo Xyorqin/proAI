@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Progress;
+namespace App\Services\Telegram\Progress;
 
 use App\Models\Progress\UserProgress;
 

@@ -5,8 +5,12 @@ namespace App\Services\Telegram\Handlers;
 use App\Models\Progress\UserProgress;
 use App\Models\Structure\Section;
 use App\Models\Structure\Subsection;
+use App\Models\User;
+use App\Models\UserState;
 use App\Services\User\UserService;
 use App\Services\Telegram\File\UploadedFileService;
+use App\UserProgressLevelEnum;
+use App\UserStateLevelEnum;
 use Telegram\Bot\Api;
 
 class MessageHandler
@@ -23,9 +27,9 @@ class MessageHandler
         $text = $message['text'] ?? '';
 
         $user = $this->userService->getOrCreateByChatId($chatId, $message['from']);
-loggeR($user);
+
         if ($text === '/start') {
-            $this->resetProgress($user->id);
+            $this->resetState($user->id);
             $this->sendWelcome($chatId, $user->username);
             $this->showMainMenu($chatId);
             return;
@@ -115,9 +119,14 @@ loggeR($user);
         );
     }
 
-    protected function resetProgress(int $userId): void
+    protected function resetState(int $userId): void
     {
-        UserProgress::where('user_id', $userId)->delete();
+        UserState::where('user_id', $userId)->delete();
+
+        UserState::updateOrCreate(
+            ['user_id' => $userId],
+            ['level' => UserStateLevelEnum::MENU_LEVEL, 'step' => 0]
+        );
     }
 
     public function showMainMenu(int $chatId): void
