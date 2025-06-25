@@ -6,5 +6,8 @@ use App\Models\BaseModel;
 
 class Subsection extends BaseModel
 {
-    //
+    public function files()
+    {
+        return $this->hasMany(SubsectionFile::class);
+    }
 }

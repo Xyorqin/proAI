@@ -20,7 +20,6 @@ return new class extends Migration
                 ->constrained('subsections')
                 ->onDelete('cascade');
             $table->integer('step')->default(0);
-            $table->boolean('is_completed')->default(false);
             $table->timestamps();
         });
     }
