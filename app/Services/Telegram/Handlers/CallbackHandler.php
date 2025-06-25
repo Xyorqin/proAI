@@ -81,7 +81,7 @@ class CallbackHandler
             'text' => "Iltimos, bo‘lim tanlang:",
             'reply_markup' => json_encode(['inline_keyboard' => $keyboard]),
         ]);
-        // $this->userService->updateProgress($userId, UserStateLevelEnum::SECTION_LEVEL, $section_id);
+        $this->userService->updateState($userId, UserStateLevelEnum::SECTION_LEVEL);
     }
 
     public function showMainMenu(int $chatId): void
@@ -102,8 +102,9 @@ class CallbackHandler
 
     public function sendSubSectionDetails($message, $userId)
     {
-        $subsectionId = explode('_', $message['data'])[1] ?? null;
-        $subsection = Subsection::find($subsectionId);
+        $subsection_id = explode('_', $message['data'])[1] ?? null;
+
+        $subsection = Subsection::find($subsection_id);
 
         if (!$subsection) {
             $this->telegram->sendMessage([
@@ -111,6 +112,26 @@ class CallbackHandler
                 'text' => "Bu bo‘lim topilmadi.",
             ]);
             return;
+        }
+
+        $file = $subsection->file;
+        if ($file && $file->type === 'video') {
+            $this->telegram->sendVideo([
+                'chat_id' => $message['from']['id'],
+                'video' => $file->path,
+                'caption' => $subsection->context ?? '',
+            ]);
+            $this->telegram->sendFile([
+                'chat_id' => $message['from']['id'],
+                'document' => $file->path,
+                'caption' => $subsection->context ?? '',
+            ]);
+            $this->userService->updateState($userId, UserStateLevelEnum::FILE_LEVEL);
+        } else {
+            $this->telegram->sendMessage([
+                'chat_id' => $message['from']['id'],
+                'text' => $subsection->context ?? 'Maʼlumot mavjud emas.',
+            ]);
         }
     }
 
