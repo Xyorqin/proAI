@@ -10,7 +10,7 @@ use App\Models\UserState;
 use App\Services\User\UserService;
 use App\Services\Telegram\File\UploadedFileService;
 use App\UserProgressLevelEnum;
-use App\UserStateLevelEnum;
+use App\Enums\UserStateLevelEnum;
 use Telegram\Bot\Api;
 
 class MessageHandler

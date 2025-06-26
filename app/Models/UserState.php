@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\UserStateLevelEnum;
+use App\Enums\UserStateLevelEnum;
 
 class UserState extends BaseModel
 {

@@ -10,4 +10,9 @@ class Subsection extends BaseModel
     {
         return $this->hasMany(SubsectionFile::class);
     }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
 }

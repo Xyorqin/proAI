@@ -9,7 +9,7 @@ use App\Models\Structure\Subsection;
 use Telegram\Bot\Api;
 use App\Services\Section\SectionService;
 use App\Services\User\UserService;
-use App\UserStateLevelEnum;
+use App\Enums\UserStateLevelEnum;
 use Illuminate\Support\Facades\Storage;
 
 class CallbackHandler
