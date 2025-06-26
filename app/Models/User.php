@@ -56,7 +56,7 @@ class User extends Authenticatable
 
     public function progress()
     {
-        return $this->hasMany(UserProgress::class, 'id', 'user_id');
+        return $this->hasMany(UserProgress::class, 'user_id', 'id');
     }
 
     public function state()

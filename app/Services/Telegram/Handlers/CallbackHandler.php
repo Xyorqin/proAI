@@ -48,6 +48,10 @@ class CallbackHandler
             $this->sendSubSectionDetails($message, $user->id);
             return;
         }
+        if ($user->state?->level == UserStateLevelEnum::FILE_LEVEL) {
+            $this->sendSubSectionList($message, $user->id);
+            return;
+        }
     }
 
     public function sendSubSectionList(array $message, int $userId): void
@@ -116,21 +120,23 @@ class CallbackHandler
             return;
         }
 
-        $file = $subsection->files()->first();
+        $files = $subsection->files;
 
-        if ($file) {
-            if ($file->type === 'mp4')
-                $this->telegram->sendVideo([
-                    'chat_id' => $message['from']['id'],
-                    'video' => new InputFile(storage_path('app/public/' . $file->path)),
-                    'caption' => $file->content ?? '',
-                ]);
-            elseif ($file->type === 'pdf')
-                $this->telegram->sendDocument([
-                    'chat_id' => $message['from']['id'],
-                    'document' => new InputFile(storage_path('app/public/' . $file->path)),
-                    'caption' => $file->content ?? '',
-                ]);
+        if (count($files)) {
+            foreach ($files as $file) {
+                if ($file->type === 'mp4')
+                    $this->telegram->sendVideo([
+                        'chat_id' => $message['from']['id'],
+                        'video' => new InputFile(storage_path('app/public/' . $file->path)),
+                        'caption' => $file->content ?? '',
+                    ]);
+                elseif ($file->type === 'pdf')
+                    $this->telegram->sendDocument([
+                        'chat_id' => $message['from']['id'],
+                        'document' => new InputFile(storage_path('app/public/' . $file->path)),
+                        'caption' => $file->content ?? '',
+                    ]);
+            }
         }
         if ($subsection->description) {
             $this->telegram->sendMessage([
@@ -138,7 +144,19 @@ class CallbackHandler
                 'text' => $subsection->description,
             ]);
         }
-        $this->userService->updateState($userId, UserStateLevelEnum::FILE_LEVEL);
+
+        $this->telegram->sendMessage([
+            'chat_id' => $message['from']['id'],
+            'text' => "Fayl yuboring 👇",
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => '⬅️ Orqaga', 'callback_data' => 'section_' . $subsection->section_id]
+                    ]
+                ]
+            ]),
+        ]);
+        $this->userService->updateState($userId, UserStateLevelEnum::FILE_LEVEL, subsection_id: $subsection_id);
     }
 
     // public function showMainMenu(int $chatId): void

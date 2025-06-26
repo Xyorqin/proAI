@@ -16,6 +16,10 @@ return new class extends Migration
             $table->foreignId('user_id')
                 ->constrained('users')
                 ->onDelete('cascade');
+            $table->foreignId('subsection_id')
+                    ->nullable()
+                ->constrained('subsections')
+                ->onDelete('cascade');
             $table->integer('step')->default(0);
             $table->string('level')->nullable();
             $table->timestamps();

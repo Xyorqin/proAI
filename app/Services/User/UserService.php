@@ -38,12 +38,13 @@ class UserService
         $user->decrement('token_balance', $amount);
     }
 
-    public function updateState($userId, $level): void
+    public function updateState($userId, $level, $subsection_id = null): void
     {
         UserState::updateOrCreate(
             ['user_id' => $userId],
             [
                 'level' => $level,
+                'subsection_id' => $subsection_id,
                 'step' => 0,
             ]
         );

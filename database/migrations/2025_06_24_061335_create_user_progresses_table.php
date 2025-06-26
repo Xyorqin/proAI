@@ -17,7 +17,6 @@ return new class extends Migration
                 ->constrained('users')
                 ->onDelete('cascade');
             $table->foreignId('subsection_id')
-                ->nullable()
                 ->constrained('subsections')
                 ->onDelete('cascade');
             $table->timestamps();

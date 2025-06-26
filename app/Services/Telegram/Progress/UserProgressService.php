@@ -19,4 +19,12 @@ class UserProgressService
     {
         return UserProgress::where('user_id', $userId)->latest()->value('subsection_id');
     }
+
+    public function addProgress(int $userId, int $subsectionId): void
+    {
+        UserProgress::firstOrCreate([
+            'user_id' => $userId,
+            'subsection_id' => $subsectionId,
+        ]);
+    }
 }
