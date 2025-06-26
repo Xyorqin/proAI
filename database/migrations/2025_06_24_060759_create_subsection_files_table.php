@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('subsection_files', function (Blueprint $table) {
             $table->id();
             $table->foreignId('subsection_id')
+                ->nullable()
                 ->constrained('subsections')
                 ->onDelete('cascade');
-            $table->string('file_path');
+            $table->string('path')->nullable();
             $table->text('content')->nullable();
             $table->string('type');
             $table->timestamps();

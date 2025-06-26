@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->foreignId('section_id')->constrained('sections')->onDelete('cascade');
             $table->integer('order')->default(0);
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

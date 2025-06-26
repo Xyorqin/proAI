@@ -15,6 +15,5 @@ Route::prefix('bot')->group(function () {
 Route::prefix('admin')->group(function () {
     Route::resource('/sections', \App\Http\Controllers\Admin\SectionController::class);
     Route::resource('/subsections', \App\Http\Controllers\Admin\SubsectionController::class);
-    Route::post('/subsection/{subsection}/upload-file', [\App\Http\Controllers\Admin\SubsectionController::class, 'uploadFile']);
-    Route::post('/subsection/{subsection}/toggle-file', [\App\Http\Controllers\Admin\SubsectionController::class, 'toggleFile']);
+    Route::post('/subsection/upload-file', [\App\Http\Controllers\Admin\SubsectionController::class, 'uploadFile']);
 });

@@ -10,7 +10,9 @@ use Telegram\Bot\Api;
 use App\Services\Section\SectionService;
 use App\Services\User\UserService;
 use App\Enums\UserStateLevelEnum;
+use CURLFile;
 use Illuminate\Support\Facades\Storage;
+use Telegram\Bot\FileUpload\InputFile;
 
 class CallbackHandler
 {
@@ -114,25 +116,29 @@ class CallbackHandler
             return;
         }
 
-        $file = $subsection->file;
-        if ($file && $file->type === 'video') {
-            $this->telegram->sendVideo([
-                'chat_id' => $message['from']['id'],
-                'video' => $file->path,
-                'caption' => $subsection->context ?? '',
-            ]);
-            $this->telegram->sendFile([
-                'chat_id' => $message['from']['id'],
-                'document' => $file->path,
-                'caption' => $subsection->context ?? '',
-            ]);
-            $this->userService->updateState($userId, UserStateLevelEnum::FILE_LEVEL);
-        } else {
+        $file = $subsection->files()->first();
+
+        if ($file) {
+            if ($file->type === 'mp4')
+                $this->telegram->sendVideo([
+                    'chat_id' => $message['from']['id'],
+                    'video' => new InputFile(storage_path('app/public/' . $file->path)),
+                    'caption' => $file->content ?? '',
+                ]);
+            elseif ($file->type === 'pdf')
+                $this->telegram->sendDocument([
+                    'chat_id' => $message['from']['id'],
+                    'document' => new InputFile(storage_path('app/public/' . $file->path)),
+                    'caption' => $file->content ?? '',
+                ]);
+        }
+        if ($subsection->description) {
             $this->telegram->sendMessage([
                 'chat_id' => $message['from']['id'],
-                'text' => $subsection->context ?? 'Maʼlumot mavjud emas.',
+                'text' => $subsection->description,
             ]);
         }
+        $this->userService->updateState($userId, UserStateLevelEnum::FILE_LEVEL);
     }
 
     // public function showMainMenu(int $chatId): void

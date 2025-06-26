@@ -37,6 +37,10 @@ class SubsectionController extends Controller
             'slug' => 'nullable|string|max:255|unique:subsections,slug',
             'section_id' => 'required|exists:sections,id',
             'order' => 'nullable|integer|min:0',
+            'files' => 'required|array|min:1',
+            'files.*.file_id' => 'required|integer|exists:subsection_files,id',
+            'files.*.content' => 'required|string',
+            'description' => 'nullable|string',
         ]);
         $subsection = $this->subsectionService->create($validated);
         return response()->successJson($subsection, 201);
@@ -49,6 +53,10 @@ class SubsectionController extends Controller
             'slug' => 'sometimes|nullable|string|max:255|unique:subsections,slug,' . $id,
             'section_id' => 'sometimes|required|exists:sections,id',
             'order' => 'sometimes|nullable|integer|min:0',
+            'files' => 'sometimes|required|array|min:1',
+            'files.*.file_id' => 'sometimes|required|integer|exists:subsection_files,id',
+            'files.*.content' => 'sometimes|required|string',
+            'description' => 'nullable|string',
         ]);
         $subsection = $this->subsectionService->update($id, $validated);
         if (!$subsection) {
@@ -66,16 +74,16 @@ class SubsectionController extends Controller
         return response()->successJson(['message' => 'Deleted successfully']);
     }
 
-    public function uploadFile(Request $request, $id)
+    public function uploadFile(Request $request)
     {
         $request->validate([
             'file' => 'required|file|max:10240',
             'type' => 'required|string',
         ]);
-        $result = $this->subsectionService->attachFile($id, $request->file('file'), $request->input('type'));
+        $result = $this->subsectionService->attachFile($request->file('file'), $request->input('type'));
         if (!$result) {
             return response()->errorJson(['message' => 'Subsection not found'], 404);
         }
-        return response()->successJson(['message' => 'File uploaded', 'path' => $result['path']]);
+        return response()->successJson($result, 201);
     }
 }
