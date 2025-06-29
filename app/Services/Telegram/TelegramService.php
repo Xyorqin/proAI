@@ -2,33 +2,30 @@
 
 namespace App\Services\Telegram;
 
+use App\Enums\UserStateLevelEnum;
+use App\Models\Progress\UserProgress;
+use App\Models\Structure\Section;
+use App\Models\User;
+use App\Models\UserState;
 use App\Services\Telegram\Handlers\CallbackHandler;
 use App\Services\Telegram\Handlers\DocumentHandler;
 use App\Services\Telegram\Handlers\MessageHandler;
 use Illuminate\Support\Facades\Log;
+use Telegram\Bot\Api;
 
 class TelegramService
 {
-
-    protected MessageHandler $messageHandler;
-    protected CallbackHandler $callbackHandler;
-    protected DocumentHandler $documentHandler;
-
     public function __construct(
-        MessageHandler $messageHandler,
-        CallbackHandler $callbackHandler,
-        DocumentHandler $documentHandler
-    ) {
-        $this->messageHandler = $messageHandler;
-        $this->callbackHandler = $callbackHandler;
-        $this->documentHandler = $documentHandler;
-    }
+        protected Api $telegram,
+        protected MessageHandler $messageHandler,
+        protected CallbackHandler $callbackHandler,
+        protected DocumentHandler $documentHandler
+    ) {}
 
     /**
      * Handle incoming updates from Telegram.
      *
      * @param array $update
-     * @return void
      */
     public function handleUpdate(array $update): void
     {
@@ -62,5 +59,63 @@ class TelegramService
     protected function handleCallback(array $callback): void
     {
         $this->callbackHandler->handle($callback);
+    }
+
+    public function showMainMenu(int $chatId, $user, $resetState = false, $withProgress = false): void
+    {
+        if ($resetState) {
+            UserState::where('user_id', $user->id)->delete();
+
+            UserState::updateOrCreate(
+                ['user_id' => $user->id],
+                ['level' => UserStateLevelEnum::MENU_LEVEL, 'step' => 0]
+            );
+        }
+
+        if ($withProgress) {
+            $buttons = Section::with('subsections')->get()->map(function ($section) use ($user) {
+                $totalSubsections = $section->subsections->count();
+
+                $doneSubsections = $user->progress()
+                    ->whereIn('subsection_id', $section->subsections->pluck('id'))
+                    ->count();
+
+                $text = "{$section->name}  ({$doneSubsections}/{$totalSubsections})";
+
+                return [[
+                    'text' => $text,
+                    'callback_data' => 'section_' . $section->id,
+                ]];
+            })->toArray();
+        } else {
+            $buttons = Section::with('subsections')->get()->map(fn($section) => [
+                [
+                    'text' => $section->name,
+                    'callback_data' => 'section_' . $section->id,
+                ]
+            ])->toArray();
+        }
+
+        $this->telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => 'Asosiy bo‘limni tanlang:',
+            'reply_markup' => json_encode(['inline_keyboard' => $buttons])
+        ]);
+    }
+
+    public function updateState(int $userId, UserStateLevelEnum $level, ?int $subsection_id = null): void
+    {
+        UserState::updateOrCreate(
+            ['user_id' => $userId],
+            ['level' => $level, 'subsection_id' => $subsection_id]
+        );
+    }
+
+    public function updateStep(int $userId, int $subsectionId, int $nextStep): void
+    {
+        UserProgress::updateOrCreate(
+            ['user_id' => $userId, 'subsection_id' => $subsectionId],
+            ['step' => $nextStep, 'is_ready' => $nextStep >= 3]
+        );
     }
 }
