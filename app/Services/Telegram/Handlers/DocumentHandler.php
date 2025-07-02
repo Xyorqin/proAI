@@ -35,21 +35,19 @@ class DocumentHandler
         $file = $this->telegram->getFile(['file_id' => $fileId]);
         $filePath = $file->file_path;
 
-        // Faylni saqlash
         $localPath = Storage::put("uploads/{$fileId}.pdf", file_get_contents("https://api.telegram.org/file/bot" . config('telegram.bots.mybot.token') . "/{$filePath}"));
 
         $user = $this->userService->getOrCreateByChatId($chatId, $message['from']);
 
         $subsection_id = $user->state?->subsection_id ?? null;
 
-        // Faylni bazaga yozish
+       
         File::create([
             'user_id' => $user->id,
-            'subsection_id' => $subsection_id, // vaqtincha
+            'subsection_id' => $subsection_id, 
             'path' => $localPath,
         ]);
 
-        // Progress va AI logika
         $this->progressService->addProgress($user->id, $subsection_id);
         // $this->promptService->storePromptContext($chatId, $localPath);
 
