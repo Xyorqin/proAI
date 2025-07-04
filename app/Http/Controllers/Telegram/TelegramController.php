@@ -18,15 +18,14 @@ class TelegramController extends Controller
 
     public function webhook(Request $request)
     {
-        
-        try {
+        // try {
             $this->telegramService->handleUpdate($request->all());
-        } catch (\Throwable $e) {
-            Log::error('TelegramController Error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
-            ]);
-        }
+        // } catch (\Throwable $e) {
+        //     Log::error('TelegramController Error: ' . $e->getMessage(), [
+        //         'trace' => $e->getTraceAsString(),
+        //         'request' => $request->all()
+        //     ]);
+        // }
 
         return response('OK', 200);
     }
