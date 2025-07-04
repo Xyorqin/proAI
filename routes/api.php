@@ -15,30 +15,10 @@ Route::prefix('bot')->group(function () {
     Route::post('/webhook', [TelegramController::class, 'webhook']);
 });
 
+Route::post('ask', [\App\Http\Controllers\AI\AIController::class, 'ask']);
+
 Route::post('file', function (Request $request) {
-    $file = File::latest()
-        ->first();
 
-    if ($file && strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'pdf') {
-        $parser = new Parser();
-        $pdf = $parser->parseFile(storage_path('app/' . $file->path));
-        $text = $pdf->getText();
-    }
-
-    if ($file && strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'docx') {
-
-        $phpWord = IOFactory::load(storage_path('app/' . $file->path));
-        $text = '';
-        foreach ($phpWord->getSections() as $section) {
-            foreach ($section->getElements() as $element) {
-                if (method_exists($element, 'getText')) {
-                    $text .= $element->getText() . "\n";
-                }
-            }
-        }
-    }
-
-    return $text ?? '';
 });
 
 Route::prefix('admin')->group(function () {

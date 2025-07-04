@@ -61,7 +61,7 @@ class TelegramService
         $this->callbackHandler->handle($callback, $this);
     }
 
-    public function showMainMenu(int $chatId, $user, $resetState = false, $withProgress = false): void
+    public function showMainMenu(int $chatId, $user, $resetState = false, $withProgress = false, $addRunButton = false): void
     {
         if ($resetState) {
             UserState::where('user_id', $user->id)->delete();
@@ -96,6 +96,12 @@ class TelegramService
             ])->toArray();
         }
 
+        // if ($addRunButton) {
+            $buttons[] = [[
+                'text' => 'AI xizmati',
+                'callback_data' => 'run_ai',
+            ]];
+        // }
         $this->telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Asosiy bo‘limni tanlang:',

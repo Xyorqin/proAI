@@ -7,6 +7,7 @@ use Telegram\Bot\FileUpload\InputFile;
 use App\Models\Structure\Subsection;
 use App\Services\User\UserService;
 use App\Enums\UserStateLevelEnum;
+use App\Services\AI\PromptService;
 use Telegram\Bot\Api;
 
 class CallbackHandler
@@ -14,12 +15,35 @@ class CallbackHandler
     public function __construct(
         protected Api $telegram,
         protected UserService $userService,
+        protected PromptService $promptService
     ) {}
 
     public function handle(array $message, TelegramService $telegramService): void
     {
         $chatId = $message['from']['id'];
         $user = $this->userService->getOrCreateByChatId($chatId, $message['from']);
+
+        if ($message['data'] === 'run_ai') {
+            $this->telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => "AI xizmati ishga tushirildi. Iltimos, kutib turing...",
+            ]);
+
+            $text = $this->promptService->readFile($user->id);
+
+            // Telegram message text limit is 4096 characters, use mb_strcut to avoid breaking UTF-8
+            $offset = 0;
+            $length = mb_strlen($text, 'UTF-8');
+            while ($offset < $length) {
+                $chunk = mb_strcut($text, $offset, 4096, 'UTF-8');
+                $this->telegram->sendMessage([
+                    'chat_id' => $chatId,
+                    'text' => $chunk,
+                ]);
+                $offset += mb_strlen($chunk, 'UTF-8');
+            }
+            return;
+        }
 
         if ($message['data'] === 'back_to_menu') {
             $this->telegram->sendMessage([

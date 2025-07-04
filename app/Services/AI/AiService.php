@@ -13,7 +13,7 @@ class AiService
         $this->client = OpenAI::client(config('services.openai.api_key'));
     }
 
-    public function generateText(string $prompt, array $options = []): string
+    public function generateText(string $prompt)
     {
         $response = $this->client->chat()->create([
             'model' => 'gpt-4o', // gpt-3.5-turbo

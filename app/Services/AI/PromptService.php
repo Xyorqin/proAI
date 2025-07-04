@@ -30,32 +30,30 @@ class PromptService
 
     public function readFile(int $userId)
     {
-        $file = File::where('user_id', $userId)
-            ->latest()
-            ->first();
+        $files = File::where('user_id', $userId)
+            ->with('subsection')
+            ->get();
 
+        $text = '';
+        foreach ($files as $file) {
 
-        if ($file && strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'pdf') {
-            $parser = new Parser();
-            $absolutePath = storage_path('app/' . $file->path);
-
-            if (file_exists($absolutePath)) {
-                $pdf = $parser->parseFile($absolutePath);
-                $text = $pdf->getText();
-            } else {
-                // Handle missing file
-                $text = 'File not found.';
+            $text .=  "\n" . $file->subsection?->section?->name . ":\n" .
+                $file->subsection?->name . ":\n";
+            if ($file && strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'pdf') {
+                $parser = new Parser();
+                $pdf = $parser->parseFile(storage_path('app/private/' . $file->path));
+                $text .= $pdf->getText() . "\n";
             }
-        }
 
-        if ($file && strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'docx') {
+            if ($file && strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'docx') {
 
-            $phpWord = IOFactory::load(storage_path('app/' . $file->path));
-            $text = '';
-            foreach ($phpWord->getSections() as $section) {
-                foreach ($section->getElements() as $element) {
-                    if (method_exists($element, 'getText')) {
-                        $text .= $element->getText() . "\n";
+                $phpWord = IOFactory::load(storage_path('app/private/' . $file->path));
+                $text = '';
+                foreach ($phpWord->getSections() as $section) {
+                    foreach ($section->getElements() as $element) {
+                        if (method_exists($element, 'getText')) {
+                            $text .= $element->getText() . "\n";
+                        }
                     }
                 }
             }
