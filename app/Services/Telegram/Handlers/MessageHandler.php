@@ -10,12 +10,15 @@ use Telegram\Bot\Api;
 
 class MessageHandler
 {
+    protected TelegramService $telegramService;
+
     public function __construct(
         protected Api $telegram,
         protected UserService $userService,
         protected UploadedFileService $uploadedFileService,
-        protected TelegramService $telegramService
-    ) {}
+    ) {
+        $this->telegramService = app(TelegramService::class);
+    }
 
     public function handle(array $message): void
     {

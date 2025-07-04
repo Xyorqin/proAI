@@ -12,14 +12,17 @@ use Telegram\Bot\Api;
 
 class DocumentHandler
 {
+    protected TelegramService $telegramService;
 
     public function __construct(
         protected Api $telegram,
         protected PromptService $promptService,
         protected UserProgressService $progressService,
         protected UserService $userService,
-        protected TelegramService $telegramService
-    ) {}
+
+    ) {
+        $this->telegramService = app(TelegramService::class);
+    }
 
     public function handle(array $message): void
     {
@@ -37,7 +40,7 @@ class DocumentHandler
 
         File::create([
             'user_id' => $user->id,
-            'subsection_id' => $subsection_id, 
+            'subsection_id' => $subsection_id,
             'path' => $localPath,
         ]);
 
@@ -51,5 +54,4 @@ class DocumentHandler
 
         $this->telegramService->showMainMenu($chatId, $user->id, resetState: true, withProgress: true);
     }
-
 }

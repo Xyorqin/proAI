@@ -11,12 +11,13 @@ use Telegram\Bot\Api;
 
 class CallbackHandler
 {
-
+    protected TelegramService $telegramService;
     public function __construct(
         protected Api $telegram,
         protected UserService $userService,
-        protected TelegramService $telegramService
-    ) {}
+    ) {
+        $this->telegramService = app(TelegramService::class);
+    }
 
     public function handle(array $message): void
     {
