@@ -49,6 +49,6 @@ class DocumentHandler
             'text' => "✅ Faylingiz qabul qilindi va mentor kontekstiga qo‘shildi.",
         ]);
 
-        $telegramService->showMainMenu($chatId, $user->id, resetState: true, withProgress: true);
+        $telegramService->showMainMenu($chatId, $user, resetState: true, withProgress: true);
     }
 }
