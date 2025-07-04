@@ -18,6 +18,8 @@ class TelegramController extends Controller
 
     public function webhook(Request $request)
     {
+            return response('OK', 200);
+
         // try {
             $this->telegramService->handleUpdate($request->all());
         // } catch (\Throwable $e) {

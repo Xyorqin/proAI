@@ -11,9 +11,9 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('/webhook', [TelegramController::class, 'webhook']);
-// Route::prefix('bot')->group(function () {
-// });
+Route::prefix('bot')->group(function () {
+    Route::post('/webhook', [TelegramController::class, 'webhook']);
+});
 
 Route::post('file', function (Request $request) {
     $file = File::latest()
