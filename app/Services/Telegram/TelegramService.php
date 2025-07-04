@@ -15,12 +15,12 @@ use Telegram\Bot\Api;
 
 class TelegramService
 {
-    // public function __construct(
+    public function __construct(
     //     protected Api $telegram,
-    //     protected MessageHandler $messageHandler,
+        protected MessageHandler $messageHandler,
     //     protected CallbackHandler $callbackHandler,
     //     protected DocumentHandler $documentHandler
-    // ) {}
+    ) {}
 
     /**
      * Handle incoming updates from Telegram.
@@ -32,7 +32,7 @@ class TelegramService
         return response('OK', 200);
         // try {
         //     if (isset($update['message'])) {
-        //         $this->handleMessage($update['message']);
+                $this->handleMessage($update['message']);
         //     } elseif (isset($update['callback_query'])) {
         //         $this->handleCallback($update['callback_query']);
         //     } else {
@@ -48,13 +48,13 @@ class TelegramService
 
     protected function handleMessage(array $message): void
     {
-        if (isset($message['text'])) {
+        // if (isset($message['text'])) {
             $this->messageHandler->handle($message);
-        } elseif (isset($message['document'])) {
-            $this->documentHandler->handle($message);
-        } else {
-            Log::info('Unhandled message type', ['message' => $message]);
-        }
+        // } elseif (isset($message['document'])) {
+        //     $this->documentHandler->handle($message);
+        // } else {
+        //     Log::info('Unhandled message type', ['message' => $message]);
+        // }
     }
 
     protected function handleCallback(array $callback): void
