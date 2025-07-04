@@ -37,8 +37,15 @@ class PromptService
 
         if ($file && strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'pdf') {
             $parser = new Parser();
-            $pdf = $parser->parseFile(storage_path('app/' . $file->path));
-            $text = $pdf->getText();
+            $absolutePath = storage_path('app/' . $file->path);
+
+            if (file_exists($absolutePath)) {
+                $pdf = $parser->parseFile($absolutePath);
+                $text = $pdf->getText();
+            } else {
+                // Handle missing file
+                $text = 'File not found.';
+            }
         }
 
         if ($file && strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'docx') {
@@ -53,7 +60,7 @@ class PromptService
                 }
             }
         }
-        
+
         return $text ?? '';
     }
 }
