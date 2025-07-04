@@ -29,7 +29,9 @@ class DocumentHandler
         $file = $this->telegram->getFile(['file_id' => $fileId]);
         $filePath = $file->file_path;
 
-        $localPath = Storage::put("uploads/{$fileId}.pdf", file_get_contents("https://api.telegram.org/file/bot" . config('telegram.bots.mybot.token') . "/{$filePath}"));
+        $fileContent = file_get_contents("https://api.telegram.org/file/bot" . config('telegram.bots.mybot.token') . "/{$filePath}");
+        $relativePath = "uploads/{$fileId}.pdf";
+        Storage::put($relativePath, $fileContent);
 
         $user = $this->userService->getOrCreateByChatId($chatId, $message['from']);
 
@@ -38,7 +40,7 @@ class DocumentHandler
         File::create([
             'user_id' => $user->id,
             'subsection_id' => $subsection_id,
-            'path' => $localPath,
+            'path' => $relativePath,
         ]);
 
         $this->progressService->addProgress($user->id, $subsection_id);
