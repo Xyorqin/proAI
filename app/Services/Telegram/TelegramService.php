@@ -27,7 +27,7 @@ class TelegramService
      *
      * @param array $update
      */
-    public function handleUpdate(array $update): void
+    public function handleUpdate(array $update)
     {
         return response('OK', 200);
         // try {
