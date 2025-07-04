@@ -12,19 +12,16 @@ use Telegram\Bot\Api;
 
 class DocumentHandler
 {
-    protected TelegramService $telegramService;
 
     public function __construct(
         protected Api $telegram,
         protected PromptService $promptService,
         protected UserProgressService $progressService,
         protected UserService $userService,
-
     ) {
-        $this->telegramService = app(TelegramService::class);
     }
 
-    public function handle(array $message): void
+    public function handle(array $message, TelegramService $telegramService): void
     {
         $chatId = $message['from']['id'];
         $document = $message['document'];
@@ -52,6 +49,6 @@ class DocumentHandler
             'text' => "✅ Faylingiz qabul qilindi va mentor kontekstiga qo‘shildi.",
         ]);
 
-        $this->telegramService->showMainMenu($chatId, $user->id, resetState: true, withProgress: true);
+        $telegramService->showMainMenu($chatId, $user->id, resetState: true, withProgress: true);
     }
 }

@@ -10,17 +10,13 @@ use Telegram\Bot\Api;
 
 class MessageHandler
 {
-    protected TelegramService $telegramService;
-
     public function __construct(
         protected Api $telegram,
         protected UserService $userService,
         protected UploadedFileService $uploadedFileService,
-    ) {
-        $this->telegramService = app(TelegramService::class);
-    }
+    ) {}
 
-    public function handle(array $message): void
+    public function handle(array $message, TelegramService $telegramService): void
     {
         $chatId = $message['chat']['id'];
         $text = $message['text'] ?? '';
@@ -29,7 +25,7 @@ class MessageHandler
 
         if ($text === '/start') {
             $this->sendWelcome($chatId, $user->username);
-            $this->telegramService->showMainMenu($chatId, $user, resetState: true);
+            $telegramService->showMainMenu($chatId, $user, resetState: true);
             return;
         }
 
@@ -37,7 +33,7 @@ class MessageHandler
             'chat_id' => $chatId,
             'text' => 'Iltimos, bo‘lim tanlang:',
         ]);
-        $this->telegramService->showMainMenu($chatId, $user);
+        $telegramService->showMainMenu($chatId, $user);
         return;
     }
 
@@ -49,7 +45,7 @@ class MessageHandler
         ]);
     }
 
-    protected function sendInstruction(int $chatId, Subsection $subsection, int $userId): void
+    protected function sendInstruction(int $chatId, Subsection $subsection, int $userId, TelegramService $telegramService): void
     {
         $instruction = $subsection->files()->where('type', 'text')->first()?->content ?? 'Yo‘riqnoma mavjud emas.';
         $this->telegram->sendMessage([
@@ -57,10 +53,10 @@ class MessageHandler
             'text' => $instruction,
         ]);
 
-        $this->telegramService->updateStep($userId, $subsection->id, 1);
+        $telegramService->updateStep($userId, $subsection->id, 1);
     }
 
-    protected function sendSample(int $chatId, Subsection $subsection, int $userId): void
+    protected function sendSample(int $chatId, Subsection $subsection, int $userId, TelegramService $telegramService): void
     {
         $sample = $subsection->files()->whereIn('type', ['pdf', 'excel'])->first();
         if ($sample) {
@@ -71,10 +67,10 @@ class MessageHandler
             ]);
         }
 
-        $this->telegramService->updateStep($userId, $subsection->id, 2);
+        $telegramService->updateStep($userId, $subsection->id, 2);
     }
 
-    protected function handleFileUpload(int $chatId, array $message, int $userId, Subsection $subsection): void
+    protected function handleFileUpload(int $chatId, array $message, int $userId, Subsection $subsection, TelegramService $telegramService): void
     {
         $this->uploadedFileService->store($userId, $subsection->id, $message);
 
@@ -83,6 +79,6 @@ class MessageHandler
             'text' => "Faylingiz qabul qilindi",
         ]);
 
-        $this->telegramService->updateStep($userId, $subsection->id, 3);
+        $telegramService->updateStep($userId, $subsection->id, 3);
     }
 }

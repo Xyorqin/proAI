@@ -16,10 +16,10 @@ use Telegram\Bot\Api;
 class TelegramService
 {
     public function __construct(
-    //     protected Api $telegram,
+        protected Api $telegram,
         protected MessageHandler $messageHandler,
-    //     protected CallbackHandler $callbackHandler,
-    //     protected DocumentHandler $documentHandler
+        protected CallbackHandler $callbackHandler,
+        protected DocumentHandler $documentHandler
     ) {}
 
     /**
@@ -29,37 +29,36 @@ class TelegramService
      */
     public function handleUpdate(array $update)
     {
-        return response('OK', 200);
-        // try {
-        //     if (isset($update['message'])) {
+        try {
+            if (isset($update['message'])) {
                 $this->handleMessage($update['message']);
-        //     } elseif (isset($update['callback_query'])) {
-        //         $this->handleCallback($update['callback_query']);
-        //     } else {
-        //         Log::warning('Unknown Telegram update type', ['update' => $update]);
-        //     }
-        // } catch (\Throwable $e) {
-        //     Log::error('TelegramService error: ' . $e->getMessage(), [
-        //         'trace' => $e->getTraceAsString(),
-        //         'update' => $update,
-        //     ]);
-        // }
+            } elseif (isset($update['callback_query'])) {
+                $this->handleCallback($update['callback_query']);
+            } else {
+                Log::warning('Unknown Telegram update type', ['update' => $update]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('TelegramService error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'update' => $update,
+            ]);
+        }
     }
 
     protected function handleMessage(array $message): void
     {
-        // if (isset($message['text'])) {
-            $this->messageHandler->handle($message);
-        // } elseif (isset($message['document'])) {
-        //     $this->documentHandler->handle($message);
-        // } else {
-        //     Log::info('Unhandled message type', ['message' => $message]);
-        // }
+        if (isset($message['text'])) {
+            $this->messageHandler->handle($message, $this);
+        } elseif (isset($message['document'])) {
+            $this->documentHandler->handle($message, $this);
+        } else {
+            Log::info('Unhandled message type', ['message' => $message]);
+        }
     }
 
     protected function handleCallback(array $callback): void
     {
-        $this->callbackHandler->handle($callback);
+        $this->callbackHandler->handle($callback, $this);
     }
 
     public function showMainMenu(int $chatId, $user, $resetState = false, $withProgress = false): void

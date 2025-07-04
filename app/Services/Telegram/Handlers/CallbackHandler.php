@@ -11,15 +11,12 @@ use Telegram\Bot\Api;
 
 class CallbackHandler
 {
-    protected TelegramService $telegramService;
     public function __construct(
         protected Api $telegram,
         protected UserService $userService,
-    ) {
-        $this->telegramService = app(TelegramService::class);
-    }
+    ) {}
 
-    public function handle(array $message): void
+    public function handle(array $message, TelegramService $telegramService): void
     {
         $chatId = $message['from']['id'];
         $user = $this->userService->getOrCreateByChatId($chatId, $message['from']);
@@ -29,25 +26,25 @@ class CallbackHandler
                 'chat_id' => $chatId,
                 'text' => "Asosiy menyuga qaytdingiz.",
             ]);
-            $this->telegramService->showMainMenu($chatId, $user, true);
+            $telegramService->showMainMenu($chatId, $user, true);
             return;
         }
 
         if ($user->state?->level == UserStateLevelEnum::MENU_LEVEL) {
-            $this->sendSubSectionList($message, $user->id);
+            $this->sendSubSectionList($message, $user->id, $telegramService);
             return;
         }
         if ($user->state?->level == UserStateLevelEnum::SECTION_LEVEL) {
-            $this->sendSubSectionDetails($message, $user->id);
+            $this->sendSubSectionDetails($message, $user->id, $telegramService);
             return;
         }
         if ($user->state?->level == UserStateLevelEnum::FILE_LEVEL) {
-            $this->sendSubSectionList($message, $user->id);
+            $this->sendSubSectionList($message, $user->id, $telegramService);
             return;
         }
     }
 
-    public function sendSubSectionList(array $message, int $userId): void
+    public function sendSubSectionList(array $message, int $userId, TelegramService $telegramService): void
     {
         $section_id = explode('_', $message['data'])[1] ?? null;
         $subsections = Subsection::where('section_id', $section_id)->get();
@@ -80,10 +77,10 @@ class CallbackHandler
             'text' => "Iltimos, bo‘lim tanlang:",
             'reply_markup' => json_encode(['inline_keyboard' => $keyboard]),
         ]);
-        $this->telegramService->updateState($userId, UserStateLevelEnum::SECTION_LEVEL);
+        $telegramService->updateState($userId, UserStateLevelEnum::SECTION_LEVEL);
     }
 
-    public function sendSubSectionDetails($message, $userId)
+    public function sendSubSectionDetails($message, $userId, TelegramService $telegramService)
     {
         $subsection_id = explode('_', $message['data'])[1] ?? null;
 
@@ -133,6 +130,6 @@ class CallbackHandler
                 ]
             ]),
         ]);
-        $this->telegramService->updateState($userId, UserStateLevelEnum::FILE_LEVEL, subsection_id: $subsection_id);
+        $telegramService->updateState($userId, UserStateLevelEnum::FILE_LEVEL, subsection_id: $subsection_id);
     }
 }
