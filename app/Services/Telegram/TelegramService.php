@@ -15,12 +15,12 @@ use Telegram\Bot\Api;
 
 class TelegramService
 {
-    public function __construct(
-        protected Api $telegram,
-        protected MessageHandler $messageHandler,
-        protected CallbackHandler $callbackHandler,
-        protected DocumentHandler $documentHandler
-    ) {}
+    // public function __construct(
+    //     protected Api $telegram,
+    //     protected MessageHandler $messageHandler,
+    //     protected CallbackHandler $callbackHandler,
+    //     protected DocumentHandler $documentHandler
+    // ) {}
 
     /**
      * Handle incoming updates from Telegram.
@@ -29,20 +29,21 @@ class TelegramService
      */
     public function handleUpdate(array $update): void
     {
-        try {
-            if (isset($update['message'])) {
-                $this->handleMessage($update['message']);
-            } elseif (isset($update['callback_query'])) {
-                $this->handleCallback($update['callback_query']);
-            } else {
-                Log::warning('Unknown Telegram update type', ['update' => $update]);
-            }
-        } catch (\Throwable $e) {
-            Log::error('TelegramService error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'update' => $update,
-            ]);
-        }
+        return response('OK', 200);
+        // try {
+        //     if (isset($update['message'])) {
+        //         $this->handleMessage($update['message']);
+        //     } elseif (isset($update['callback_query'])) {
+        //         $this->handleCallback($update['callback_query']);
+        //     } else {
+        //         Log::warning('Unknown Telegram update type', ['update' => $update]);
+        //     }
+        // } catch (\Throwable $e) {
+        //     Log::error('TelegramService error: ' . $e->getMessage(), [
+        //         'trace' => $e->getTraceAsString(),
+        //         'update' => $update,
+        //     ]);
+        // }
     }
 
     protected function handleMessage(array $message): void
