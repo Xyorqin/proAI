@@ -7,6 +7,7 @@ use Telegram\Bot\FileUpload\InputFile;
 use App\Models\Structure\Subsection;
 use App\Services\User\UserService;
 use App\Enums\UserStateLevelEnum;
+use App\Models\AI\UserConversation;
 use App\Services\AI\AiService;
 use App\Services\AI\PromptService;
 use Telegram\Bot\Api;
@@ -34,6 +35,14 @@ class CallbackHandler
             $text = $this->promptService->readFile($user->id);
 
             $result = $this->aiService->generateText($text);
+
+            if ($text and $result) {
+                UserConversation::create([
+                    'user_id' => $user->id,
+                    'prompt' => $text,
+                    'answer' => $result,
+                ]);
+            }
 
             $offset = 0;
             $length = mb_strlen($result, 'UTF-8');
