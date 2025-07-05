@@ -4,8 +4,9 @@ namespace App\Models\AI;
 
 use App\Models\BaseModel;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 
-class Prompt extends BaseModel
+class UserConversation extends BaseModel
 {
     public function user()
     {

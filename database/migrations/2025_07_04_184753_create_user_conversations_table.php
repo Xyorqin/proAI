@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('user_conversations', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->index();
-
+            $table->longText('prompt')->nullable();
+            $table->longText('answer')->nullable();
             $table->timestamps();
         });
     }

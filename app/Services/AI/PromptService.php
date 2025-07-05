@@ -39,20 +39,43 @@ class PromptService
 
             $text .=  "\n" . $file->subsection?->section?->name . ":\n" .
                 $file->subsection?->name . ":\n";
+
             if ($file && strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'pdf') {
-                $parser = new Parser();
-                $pdf = $parser->parseFile(storage_path('app/private/' . $file->path));
-                $text .= $pdf->getText() . "\n";
+                if ($file->prompt) {
+                    $text .= $file->prompt->context . "\n";
+                } else {
+                    $parser = new Parser();
+                    $pdf = $parser->parseFile(storage_path('app/private/' . $file->path));
+                    $result_text = $pdf->getText();
+
+                    Prompt::create([
+                        'user_id' => $userId,
+                        'file_id' => $file->id,
+                        'context' => $result_text,
+                    ]);
+
+                    $text .= $result_text . "\n";
+                }
             }
 
             if ($file && strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'docx') {
+                if ($file->prompt) {
+                    $text .= $file->prompt->context . "\n";
+                } else {
 
-                $phpWord = IOFactory::load(storage_path('app/private/' . $file->path));
-                $text = '';
-                foreach ($phpWord->getSections() as $section) {
-                    foreach ($section->getElements() as $element) {
-                        if (method_exists($element, 'getText')) {
-                            $text .= $element->getText() . "\n";
+                    $phpWord = IOFactory::load(storage_path('app/private/' . $file->path));
+                    $text = '';
+                    foreach ($phpWord->getSections() as $section) {
+                        foreach ($section->getElements() as $element) {
+                            if (method_exists($element, 'getText')) {
+                                Prompt::create([
+                                    'user_id' => $userId,
+                                    'file_id' => $file->id,
+                                    'context' => $element->getText(),
+                                ]);
+
+                                $text .= $element->getText() . "\n";
+                            }
                         }
                     }
                 }

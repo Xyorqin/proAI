@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('file_id')
                 ->constrained('files')
                 ->onDelete('cascade');
-            $table->jsonb('context_json')->nullable();
+            $table->longtext('context')->nullable();
             $table->timestamps();
         });
     }
