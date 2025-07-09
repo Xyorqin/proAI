@@ -102,6 +102,7 @@ class TelegramService
                 'callback_data' => 'run_ai',
             ]];
         // }
+        
         $this->telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Asosiy bo‘limni tanlang:',
