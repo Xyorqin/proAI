@@ -34,15 +34,14 @@ class CallbackHandler
 
             $text = $this->promptService->readFile($user->id);
 
-            $result = $this->aiService->generateText($text);
-
-            if ($text and $result) {
-                UserConversation::create([
-                    'user_id' => $user->id,
-                    'prompt' => $text,
-                    'answer' => $result,
+            if (empty($text)) {
+                $this->telegram->sendMessage([
+                    'chat_id' => $chatId,
+                    'text' => "AI xizmati uchun matn topilmadi. Iltimos, fayl yuboring.",
                 ]);
+                return;
             }
+            $result = $this->aiService->generateText($text, $user);
 
             $offset = 0;
             $length = mb_strlen($result, 'UTF-8');

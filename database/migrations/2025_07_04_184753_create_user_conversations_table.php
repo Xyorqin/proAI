@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->index();
             $table->longText('prompt')->nullable();
             $table->longText('answer')->nullable();
+            $table->jsonb('result')->nullable();
             $table->timestamps();
         });
     }
